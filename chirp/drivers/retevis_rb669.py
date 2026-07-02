@@ -249,7 +249,7 @@ class RB669Radio(chirp_common.CloneModeRadio):
     def get_features(self):
         rf = chirp_common.RadioFeatures()
         rf.has_settings = True
-        rf.has_bank = False
+        rf.has_bank = False #or does it?
         rf.has_ctone = True
         rf.has_cross = True
         rf.has_rx_dtcs = True
@@ -284,21 +284,15 @@ class RB669Radio(chirp_common.CloneModeRadio):
         return repr(self._memobj.memory[number - 1])
 
     def decode_tone(self, val):
-        """Parse the tone data to decode from mem, it returns:
-        Mode (''|DTCS|Tone), Value (None|###), Polarity (None,N,R)"""
-        if val.get_raw(asbytes=False) == "\xFF\xFF":
-            return '', None, None
-
         val = int(val)
-        if val >= 12000:
-            a = val - 12000
-            return 'DTCS', a, 'R'
+        if val == 16665:
+            return '', None, None
+        elif val >= 12000:
+            return 'DTCS', val - 12000, 'R'
         elif val >= 8000:
-            a = val - 8000
-            return 'DTCS', a, 'N'
+            return 'DTCS', val - 8000, 'N'
         else:
-            a = val / 10.0
-            return 'Tone', a, None
+            return 'Tone', val / 10.0, None
 
     def encode_tone(self, memval, mode, value, pol):
         """Parse the tone data to encode from UI to mem"""
